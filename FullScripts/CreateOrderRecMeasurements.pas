@@ -30,8 +30,7 @@ begin
         if Instance.StatusList.Items[i].OrderStatus.Name = 'Замер' then begin
           Instance.StatusList.Items[i].PlanDate := StrToDateTime(Copy(dateTimeToStr(date.time), 0, 11) + time.text + ':00');
           if executor.text <> '--Исполнитель--' then begin
-            //showmessage(executor.itemindex);
-            //Instance.StatusList.Items[i].Executor := IowEmployee(executor.items.objects[executor.itemindex]);     // пока не работает
+            Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executor.itemindex].value['EMPLOYEEID']);
           end;
           Instance.StatusList.Items[i].apply;
         end;
@@ -54,7 +53,7 @@ session := CreateObjectSession();
 employees := session.QueryRecordList(SQLQ, MakeDictionary(['ROLE', 'Замерщик']));
 
 for j := 0 to employees.count - 1 do begin
-  executors.addObject(employees.items[j].value['PERSONTITLE'], TObject(employees.items[j].value['EMPLOYEEID']));
+  executors.add(employees.items[j].value['PERSONTITLE']);
 end;
 
 session.Commit();
