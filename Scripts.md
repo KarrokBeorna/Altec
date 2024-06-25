@@ -52,6 +52,9 @@ temp3 := session.QueryValue(sqlQuery, empty); // первый столбец п�
 for i := 0 to Instance.StatusList.Count - 1 do begin
   if Instance.StatusList.Items[i].OrderStatus.Name = 'Монтаж' then begin
     Instance.StatusList.Items[i].PlanDate := StrToDateTime(Copy(dateTimeToStr(dateMounting.time), 0, 11) + timeMounting.text + ':00');
+    if executor.text <> '--Исполнитель--' then begin
+      Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executor.itemindex].value['EMPLOYEEID']);
+    end;
     Instance.StatusList.Items[i].apply;
   end;
 end;
