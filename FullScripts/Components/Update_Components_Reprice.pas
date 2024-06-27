@@ -20,7 +20,7 @@ begin
       SQLparams.Add('WGRPRICEID', RG.key);
       S.ExecSQL(UPDATE_ARTICULES, SQLparams);
     end;
-    showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
+    //showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
     S.Commit;
   except
     S.Rollback;
