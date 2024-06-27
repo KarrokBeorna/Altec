@@ -8,6 +8,7 @@
 7. [Добавление дополнительного действия на стандартное событие](#добавление-дополнительного-действия-на-стандартное-событие)
 8. [Переход между представлениями OptimaWin](#переход-между-представлениями-OptimaWin)
 9. [Создание нового объекта](#создание-нового-объекта)
+10. [Использование имеющихся объектов](#использование-имеющихся-объектов)
 
 ## Выбор файла ("Проводник")
 ```delphi
@@ -174,3 +175,24 @@ ObjectsUIService.EditObject(RP);
 
 Названия объектов можно взять из представления "Действия объекта"
 ![image](https://github.com/KarrokBeorna/Altec/assets/43076360/00be02ca-7c96-4a60-97da-aff59b4239bc)
+
+## Использование имеющихся объектов
+1. В случае как и с созданием нового объекта, сначала ищем названия объектов
+2. Создаем переменные под эти объекты с нужными типами
+3. Заполняем переменные с помощью метода `SelectObject` у сервиса объектов
+4. Вызываем свойства у полученных объектов (ищем доступные в справочнике)
+
+```delphi
+var
+  ObjectsUIService: IpubObjectsUIService;
+  OG: IowOptimizationGroup;
+  MU: IowMeasureUnit;
+
+begin
+  ObjectsUIService := ServiceProvider.GetService(IpubObjectsUIService);
+  OG := ObjectsUIService.SelectObject('IowOptimizationGroup');
+  MU := ObjectsUIService.SelectObject('IowMeasureUnit');
+
+  showmessage(intToStr(OG.key) + ' : ' + intToStr(MU.key));
+end;
+```
