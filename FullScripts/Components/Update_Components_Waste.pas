@@ -27,12 +27,12 @@ begin
       SQLparams.Add('PROCENTWASTE', text);
       Session.ExecSQL(UPDATE_ARTICULES, SQLparams);
     end;
-    showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
+    //showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
     Session.Commit;
     Form1.close;
   except
     Session.Rollback;
-    SHOWMESSAGE('Введите численное значение отхода');
+    SHOWMESSAGE('Оставьте поле пустым или ведите численное значение отхода');
   end;
 end;
 
