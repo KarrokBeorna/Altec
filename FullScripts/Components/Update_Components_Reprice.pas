@@ -24,6 +24,5 @@ begin
     S.Commit;
   except
     S.Rollback;
-    showmessage('Что-то пошло не так');
   end;
 end;
