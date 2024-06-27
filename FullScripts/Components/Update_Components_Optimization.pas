@@ -16,11 +16,6 @@ var
   OG: IowOptimizationGroup;
   MU: IowMeasureUnit;
 
-procedure btnOkClicked(Sender: TOBject);
-begin
-
-end;
-
 begin
   S := CreateObjectSession;
   SQLparams := CreateDictionary;
