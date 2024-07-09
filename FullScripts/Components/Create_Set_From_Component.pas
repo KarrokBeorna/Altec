@@ -11,10 +11,12 @@ begin
 
   ST.Name := Instance.Name;
   ST.Marking := Instance.Marking;
+  ST.AllowUseAsExtra := True;
+  ST.ColorType := Instance.ColorType;
 
   STI := ST.Items.Add(S.OpenObject(IowArticul, Instance.Key));
   STI.QuantityFormula := '1';
-  STI.SizeFormula := '0';
+  if Instance.Measure.MeasureType.Key <> 4 then STI.SizeFormula := '0';
   STI.Apply;
 
   ObjectsUIService := ServiceProvider.GetService(IpubObjectsUIService);
