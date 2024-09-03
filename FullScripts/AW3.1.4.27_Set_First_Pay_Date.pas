@@ -23,7 +23,7 @@ begin
   payDate := S.QueryValue(SELECT_FIRST_PAY, MakeDictionary(['ORDERID', OrderId]));
   UFValueID := S.QueryValue(SELECT_USERFIELD_VALUE, MakeDictionary(['UFID', userFieldID, 'ID', OrderId]));
 
-  if not (UFValueID > 0) then begin
+  if not (UFValueID > 0) and (payDate > 0) then begin
     S.ExecSQL(INSERT_ORDER_UF_VALUE, MakeDictionary(['ORDERID', OrderID,
                                                      'USERFIELDID', userFieldID,
                                                      'VAR_DATE', payDate]));
