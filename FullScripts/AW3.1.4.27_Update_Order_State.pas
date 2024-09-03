@@ -13,7 +13,8 @@ const
 var
   S: IomSession;
   lastStates: IcmDictionaryList;
-  stateId, orderid, statePosit: Integer;
+  stateId, orderid, statePosit, oldTime, currTime: Integer;
+  changeDate: TDateTime;
 
 begin
   S := CreateObjectSession('');
@@ -23,14 +24,18 @@ begin
   for i := 0 to lastStates.count - 1 do begin
     orderid := lastStates.items[i].value['ORDERID'];
     statePosit := lastStates.items[i].value['STATEPOSIT'] + 1;
-
-    S.ExecSQL(INSERT_ORDER_STATE, MakeDictionary(['ORDERID', orderid,
-                                                  'ORDERSTATEID', stateId,
-                                                  'TIME', Now,
-                                                  'STATE_POSIT', statePosit,
-                                                  'RCOMMENT', '']));
-    S.ExecSQL(UPDATE_ORDER_STATE, MakeDictionary(['ORDERID', orderid,
-                                                  'ORDERSTATEID', stateId]));
+    changeDate := lastStates.items[i].value['CHANGEDATE'];
+    
+    // (Now - changeDate) - это разница в днях между текущим временем и временем проставления состояния "Договор заключен"
+    if Now - changeDate > 1 then begin
+      S.ExecSQL(INSERT_ORDER_STATE, MakeDictionary(['ORDERID', orderid,
+                                                    'ORDERSTATEID', stateId,
+                                                    'TIME', Now,
+                                                    'STATE_POSIT', statePosit,
+                                                    'RCOMMENT', '']));
+      S.ExecSQL(UPDATE_ORDER_STATE, MakeDictionary(['ORDERID', orderid,
+                                                    'ORDERSTATEID', stateId]));
+    end;
   end;
 
   S.Commit();
