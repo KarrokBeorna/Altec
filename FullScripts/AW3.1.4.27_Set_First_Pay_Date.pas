@@ -23,6 +23,16 @@ begin
   payDate := S.QueryValue(SELECT_FIRST_PAY, MakeDictionary(['ORDERID', OrderId]));
   UFValueID := S.QueryValue(SELECT_USERFIELD_VALUE, MakeDictionary(['UFID', userFieldID, 'ID', OrderId]));
 
+  // Устанавливаем текущее время, если состояние "Оплачено" выставляется впервые
+  if (NewStateCode = 'pay') and (payDate = 0) then begin
+    S.ExecSQL(INSERT_ORDER_UF_VALUE, MakeDictionary(['ORDERID', OrderID,
+                                                     'USERFIELDID', userFieldID,
+                                                     'VAR_DATE', Now]));
+    S.Commit();
+  end;
+  
+  // Устанавливается первое время состояния "Оплачен", если данное состояние
+  // уже присутствовало в стеке во время выставления нового состояния
   if not (UFValueID > 0) and (payDate > 0) then begin
     S.ExecSQL(INSERT_ORDER_UF_VALUE, MakeDictionary(['ORDERID', OrderID,
                                                      'USERFIELDID', userFieldID,
