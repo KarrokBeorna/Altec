@@ -48,10 +48,12 @@ begin
                                                        'VAR_DATE', payDate]));
       S.Commit();
     end else begin
-      S.ExecSQL(UPDATE_ORDER_UF_VALUE, MakeDictionary(['ORDERID', OrderID,
+      if (payDate > 0) then begin
+        S.ExecSQL(UPDATE_ORDER_UF_VALUE, MakeDictionary(['ORDERID', OrderID,
                                                        'USERFIELDID', userFieldID,
                                                        'VAR_DATE', payDate]));
-      S.Commit();
+        S.Commit();
+      end;
     end;
   end;
 end;
