@@ -65,7 +65,7 @@ begin
   partsDict := getDictionaryFromEntry(PARTS_AND_ARMS, ':');
 
   for j := 0 to partsDict.Count - 1 do begin
-    paramsDict := getDictionaryFromEntry(partsDict[IntToStr(j)], ',');
+    paramsDict := getDictionaryFromEntry(partsDict[IntToStr(j)], '|');
 
     PARTNAME := TRIM(paramsDict['0']);
     A_SIZE := TRIM(paramsDict['1']);
@@ -130,7 +130,7 @@ begin
   MainProfile.Measure := Measure;
   if PRICE <> '' then MainProfile.Price := StrToFloat(PRICE) else MainProfile.Price := 0;
   if RECALCNAME <> '' then MainProfile.RecalcGroup := RecalcGroup;
-  if FOLDWIDTH <> '' then MainProfile.FoldWidth := StrToInt(FOLDWIDTH);
+  if FOLDWIDTH <> '' then MainProfile.FoldWidth := StrToFloat(FOLDWIDTH);
   MainProfile.Purpose := Purpose;
   MainProfile.Apply;
 
