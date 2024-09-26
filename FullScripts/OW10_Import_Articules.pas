@@ -74,6 +74,7 @@ begin
     D_SIZE := TRIM(paramsDict['4']);
     F_SIZE := TRIM(paramsDict['5']);
     ARMOURINGS := TRIM(paramsDict['6']);
+    POSITION := TRIM(paramsDict['7']);
 
     PARTID := S.QueryValue(FIND_PART, MakeDictionary(['PARTNAME', PARTNAME]));
     Part := S.OpenObject(IowMainProfileType, PARTID);
@@ -87,6 +88,7 @@ begin
     if C_SIZE <> '' then MainProfilePart.C := StrToFloat(C_SIZE);
     if D_SIZE <> '' then MainProfilePart.D := StrToFloat(D_SIZE);
     if F_SIZE <> '' then MainProfilePart.Cutter := StrToFloat(F_SIZE);
+    if POSITION <> '' then MainProfilePart.Position := StrToInt(POSITION);
     MainProfilePart.Apply;
 
     if ARMOURINGS <> '' then begin
