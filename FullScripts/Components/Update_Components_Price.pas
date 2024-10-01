@@ -1,5 +1,5 @@
 const
-  FIND_ARTICULID = 'SELECT MAX(ARTICULID) as ARTICULID FROM VIRTARTICULES WHERE TRIM(AR_ART) = :AR_ART and TRIM(AR_LONGNAME) = :AR_LONGNAME';
+  FIND_ARTICULID = 'SELECT ARTICULID FROM VIRTARTICULES WHERE AR_ART = :AR_ART';
 
 var
   S: IomSession;
@@ -46,7 +46,7 @@ begin
     RP.EffectDate := Now + 1/24;
 
     for i := 1 to sFile.count - 1 do begin
-      currStr := sFile[i];
+      currStr := trim(sFile[i]);
 
       if currStr <> '' then begin
         entryDict := getDictionaryFromEntry(currStr);
@@ -56,28 +56,34 @@ begin
         DOP_ART := entryDict['2'];
         C_TYPE := entryDict['3'];
         MD_NAME := entryDict['4'];
-        PRICE := entryDict['5'];
+        OLD_PRICE := entryDict['5'];
+        PRICE := entryDict['6'];
 
-        ARTICULID := S.QueryValue(FIND_ARTICULID, MakeDictionary([
-          'AR_ART', TRIM(ART),
-          'AR_LONGNAME', TRIM(NAME)
-        ]));
+        if OLD_PRICE <> PRICE then begin
+          ARTICULIDs := S.QueryRecordList(FIND_ARTICULID, MakeDictionary([
+            'AR_ART', ART
+          ]));
 
-        try
-          RI := RP.Items.Add(S.OpenObject(IowArticul, ARTICULID));
-        except
-          visible := false;
-          showMessage('Артикул "' + ART + '" (строка №' + intToStr(i + 1) + ') не найден в программе - переоценка не будет сформирована');
-          break;
-        end;
+          for z := 0 to ARTICULIDs.Count - 1 do begin
+            ARTICULID := ARTICULIDs.Items[z].value['ARTICULID'];
 
-        try
-          RI.Price := PRICE;
-          RI.Apply;
-        except
-          visible := false;
-          showMessage('На артикуле "' + ART + '" (строка №' + intToStr(i + 1) + ') стоит пустая цена - ' + #13 + 'переоценка не будет сформирована');
-          break;
+            try
+              RI := RP.Items.Add(S.OpenObject(IowArticul, ARTICULID));
+            except
+              visible := false;
+              showMessage('Артикул "' + ART + '" (строка №' + intToStr(i + 1) + ') не найден в программе - переоценка не будет сформирована');
+              break;
+            end;
+
+            try
+              RI.Price := PRICE;
+              RI.Apply;
+            except
+              visible := false;
+              showMessage('На артикуле "' + ART + '" (строка №' + intToStr(i + 1) + ') стоит пустая цена - ' + #13 + 'переоценка не будет сформирована');
+              break;
+            end;
+          end;
         end;
       end;
     end;
