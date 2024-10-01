@@ -29,11 +29,34 @@ begin
   Plenka := ['', 'AI', 'AII', 'AIII'];
   Glasses1 := ['4', '4Sol', '4Royal', '4Sil', '4Br'];
   Glasses2 := ['4', '4Sol', '4Royal', '4Sil', '4Br', '4LowE'];
+  Glasses3 := ['6', '6Sol', '6Royal', '6Sil', '6Br'];
 
   GPrices := [0, 350, 900, 900, 900, 135];
   Dist1Prices := [0, 50, 80, 110, 130];
   Dist2Prices := [0, 30, 15, 90];
   PlenkaPrices := [0, 1800, 2000, 2450];
+
+  index := 1;
+
+  // Стекло 4мм
+  for a := 0 to length(Glasses1) - 1 do begin
+    for b := 0 to length(Plenka) - 1 do begin
+      Formula := Glasses1[a] + Plenka[b];
+      index := index + 1;
+      createGlassPacket(675, 0, 0, PlenkaPrices[b], GPrices[a], 0, 0, index, Formula);
+    end;
+  end;
+
+  index := 1;
+
+  // Стекло 6мм
+  for a := 0 to length(Glasses3) - 1 do begin
+    for b := 0 to length(Plenka) - 1 do begin
+      Formula := Glasses3[a] + Plenka[b];
+      index := index + 1;
+      createGlassPacket(1000, 0, 0, PlenkaPrices[b], GPrices[a], 0, 0, index, Formula);
+    end;
+  end;
 {
   index := 0;
 
@@ -49,7 +72,7 @@ begin
       end;
     end;
   end;
-}
+
   index := 0;
 
   // Двухкамерные
@@ -68,5 +91,6 @@ begin
       end;
     end;
   end;
+}
   S.Commit();
 end;
