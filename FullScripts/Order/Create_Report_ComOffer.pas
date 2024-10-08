@@ -9,6 +9,8 @@ var
   File: IowFile;
 
 begin
+  Instance.Apply(True);
+  Instance.Session.Commit;
   reportName := 'Коммерческое предложение';
   S := TStringStream.Create(Instance.Session.QueryValue(GET_REPORTBLOB, MakeDictionary(['NAME', reportName])));
 
@@ -21,7 +23,7 @@ begin
 
       if FastReportExportToFP3(ReportStream, AttachmentStream, MakeDictionary(['RecordID', Instance.Key]), True) then begin
         File := Instance.Session.NewObject(IowFile);
-        File.LoadFromStream(reportName + '.fp3', AttachmentStream);
+        File.LoadFromStream(reportName + ' (' + varToStr(Instance.Price) + ' руб.).fp3', AttachmentStream);
         File.Apply;
         Instance.Attachments.Add(File).Apply;
         File := Empty;
