@@ -8,6 +8,33 @@ var
   fileID: Integer;
   File: IowFile;
 
+procedure sendMail(body, mail: String);
+begin
+  MS := CreateMailSender();
+  MS.Account.FromAddress := 'support@altec.ru';
+  MS.Account.FromName := 'Test';
+  MS.Account.SmtpHost := 'mail.altec.ru';
+  MS.Account.SmtpPassword := '';
+  MS.Account.SmtpPort := 465;
+  MS.Account.SmtpUser := 'support@altec.ru';
+  MS.Account.SmtpUseSSL := True;
+  M := MS.NewEmail;
+  M.RecipientsField := varToStr(mail);
+  M.Subject := 'Коммерческое предложение';
+  M.ContentType := 'text/html';
+  M.Body := Body;
+
+  MS.SendEmail(M, empty);
+{
+  if MS.SendEmail(M, False) then
+    showmessage('Письмо отправлено по адресу ' + mail)
+  else
+    showmessage('Не удалось отправить письмо по адресу ' + mail);
+}
+  M := Empty;
+  MS := Empty;
+end;
+
 begin
   Instance.Apply(True);
   Instance.Session.Commit;
@@ -33,6 +60,12 @@ begin
             Instance.StatusList.Items[i].Done := True;
             Instance.StatusList.Items[i].Comment := 'Отчёт прикреплён во вложениях';
             Instance.StatusList.Items[i].apply;
+          end;
+        end;
+
+        for i := 0 to Instance.Customer.Emails.Count - 1 do begin
+          if Instance.Customer.Emails.Items[i].IsMain then begin
+            sendMail(Instance.Name, Instance.Customer.Emails.Items[i].Email);
           end;
         end;
       end;
