@@ -31,16 +31,22 @@ begin
       for i := 0 to Instance.StatusList.Count - 1 do begin
         if Instance.StatusList.Items[i].OrderStatus.Name = 'Доставка' then begin
           Instance.StatusList.Items[i].PlanDate := StrToDateTime(Copy(dateTimeToStr(dateDelivery.time), 0, 11) + timeDelivery.text + ':00');
-          if executorDelivery.text <> '--Исполнитель--' then begin
-            Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executorDelivery.itemindex].value['EMPLOYEEID']);
+          try
+            if executorDelivery.text <> '--Исполнитель доставки--' then begin
+              Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executorDelivery.itemindex].value['EMPLOYEEID']);
+            end;
+          except
           end;
           Instance.StatusList.Items[i].apply;
         end;
 
         if Instance.StatusList.Items[i].OrderStatus.Name = 'Монтаж' then begin
           Instance.StatusList.Items[i].PlanDate := StrToDateTime(Copy(dateTimeToStr(dateMounting.time), 0, 11) + timeMounting.text + ':00');
-          if executorMounting.text <> '--Исполнитель--' then begin
-            Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executorMounting.itemindex].value['EMPLOYEEID']);
+          try
+            if executorMounting.text <> '--Исполнитель монтажа--' then begin
+              Instance.StatusList.Items[i].Executor := session.OpenObject('IowEmployee', employees.items[executorMounting.itemindex].value['EMPLOYEEID']);
+            end;
+          except
           end;
           Instance.StatusList.Items[i].apply;
         end;
@@ -50,7 +56,6 @@ begin
 end;
 
 begin
-
   timeStrings := TStringList.Create();
   executors := TStringList.Create();
 
