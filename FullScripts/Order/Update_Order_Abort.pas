@@ -4,7 +4,8 @@ var
   Session: IomSession;
   PanelReason: TGroupBox;
   reason: TRichEdit;
-  r: String;
+  reasons: TStringList;
+  reasonsCB: TComboBox;
 
 // См. Instance.StatusList - статусы текущего заказа
 
@@ -13,8 +14,13 @@ begin
    for i := 0 to Instance.StatusList.Count - 1 do begin
       if Instance.StatusList.Items[i].OrderStatus.Name = 'Отказ' then begin
         Instance.StatusList.Items[i].Done := True;
-        r := '';
-        Instance.StatusList.Items[i].Comment := reason.Lines.Text;
+        if reasonsCB.text = 'Другое' then begin
+          Instance.StatusList.Items[i].Comment := reason.Lines.Text;
+        end else if reasonsCB.text = '--Причина отказа--' then begin
+          Instance.StatusList.Items[i].Comment := 'Без указания причины';
+        end else begin
+          Instance.StatusList.Items[i].Comment := reasonsCB.text;
+        end;
         Instance.StatusList.Items[i].apply;
       end;
     end;
@@ -22,45 +28,64 @@ begin
 end;
 
 begin
+  reasons := TStringList.Create();
 
-Form1 := TForm.Create(Application);
- with Form1 do begin
-   Width := 235;
-   Height := 152;
-   caption := 'Отказ';
-   position := poScreenCenter;
-   BorderIcons := biSystemMenu;
- end;
+  reasons.add('Дорого');
+  reasons.add('Не устроил ассортимент');
+  reasons.add('Долго ждать');
+  reasons.add('Закажет позже');
+  reasons.add('Дубль');
+  reasons.add('Другое');
 
-PanelReason := TGroupBox.Create(Application);
- with PanelReason do begin
-   Width := 210;
-   Height := 73;
-   Top := 2;
-   Left := 5;
-   caption := 'Причина отказа';
-   Parent := Form1;
- end;
+  Form1 := TForm.Create(Application);
+  with Form1 do begin
+    Width := 235;
+    Height := 182;
+    caption := 'Отказ';
+    position := poScreenCenter;
+    BorderIcons := biSystemMenu;
+  end;
 
-reason := TRichEdit.Create(Application);
- with reason do begin
-   Left := 5;
-   Top := 15;
-   Width := 200;
-   height := Form1.height - 100;
-   Parent := PanelReason;
- end;
+  reasonsCB := TComboBox.Create(Application);
+  with reasonsCB do begin
+    Left := 5;
+    Top := 5;
+    Width := 210;
+    Height := 30;
+    Text := '--Причина отказа--';
+    Parent := Form1;
+    items := reasons;
+  end;
 
-btnOk := TButton.Create(Application);
- with btnOk do begin
-   Left := 10;
-   Top := 78;
-   Width := 200;
-   Height := 30;
-   Caption := 'Сохранить';
-   Parent := Form1;
-   onClick := @btnOkClicked;
- end;
+  PanelReason := TGroupBox.Create(Application);
+  with PanelReason do begin
+    Width := 210;
+    Height := 73;
+    Top := 32;
+    Left := 5;
+    caption := 'Причина отказа';
+    Parent := Form1;
+  end;
 
- if Form1.ShowModal = mrOk then Form1.Show;
+  reason := TRichEdit.Create(Application);
+  with reason do begin
+    Left := 5;
+    Top := 15;
+    Width := 200;
+    height := PanelReason.height - 20;
+    Parent := PanelReason;
+  end;
+
+  btnOk := TButton.Create(Application);
+  with btnOk do begin
+    Left := 10;
+    Top := 108;
+    Width := 200;
+    Height := 30;
+    Caption := 'Сохранить';
+    Parent := Form1;
+    onClick := @btnOkClicked;
+  end;
+
+  if Form1.ShowModal = mrOk then Form1.Show;
 end;
