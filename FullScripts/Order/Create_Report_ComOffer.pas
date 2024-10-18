@@ -3,9 +3,13 @@ const
 
 var
   S, T: TStream;
-  reportName: String;
+  Form1: TForm;
+  btnOk: TButton;
+  cbReady: TCheckBox;
+  PanelComment: TGroupBox;
+  comment: TRichEdit;
+  reportName, mainEmail: String = '';
   ReportStream, AttachmentStream: IcmStream;
-  fileID: Integer;
   File: IowFile;
 
 procedure sendMail(body, mail: String);
@@ -14,7 +18,7 @@ begin
   MS.Account.FromAddress := 'support@altec.ru';
   MS.Account.FromName := 'Test';
   MS.Account.SmtpHost := 'mail.altec.ru';
-  MS.Account.SmtpPassword := '';
+  MS.Account.SmtpPassword := 'kwfbenbynacvjmch';
   MS.Account.SmtpPort := 465;
   MS.Account.SmtpUser := 'support@altec.ru';
   MS.Account.SmtpUseSSL := True;
@@ -35,11 +39,77 @@ begin
   MS := Empty;
 end;
 
+procedure btnOkClicked(Sender: TOBject);
+begin
+  Form1.close;
+end;
+
 begin
   Instance.Apply(True);
   Instance.Session.Commit;
   reportName := 'Коммерческое предложение';
   S := TStringStream.Create(Instance.Session.QueryValue(GET_REPORTBLOB, MakeDictionary(['NAME', reportName])));
+
+  try
+    for i := 0 to Instance.Customer.Emails.Count - 1 do begin
+      if (cbReady.checked) and (Instance.Customer.Emails.Items[i].IsMain) then begin
+        mainEmail := Instance.Customer.Emails.Items[i].Email;
+      end;
+    end;
+  except
+  end;
+
+  Form1 := TForm.Create(Application);
+  with Form1 do begin
+    Width := 235;
+    Height := 140;
+    caption := 'Отправка письма';
+    position := poScreenCenter;
+    BorderIcons := biSystemMenu;
+  end;
+
+  cbReady := TCheckBox.Create(Application);
+  with cbReady do begin
+    Left := 10;
+    Top := 5;
+    Width := 150;
+    Caption := 'Отправить письмо';
+    Parent := Form1;
+  end;
+
+  PanelEmail := TGroupBox.Create(Application);
+  with PanelEmail do begin
+     Width := 210;
+     Height := 40;
+     Top := 25;
+     Left := 5;
+     caption := 'Почта клиента';
+     Parent := Form1;
+  end;
+
+  email := TRichEdit.Create(Application);
+  with email do begin
+    Left := 5;
+    Top := 15;
+    Width := 200;
+    height := PanelEmail.height - 20;
+    Parent := PanelEmail;
+  end;
+
+  email.lines.text := mainEmail;
+
+  btnOk := TButton.Create(Application);
+  with btnOk do begin
+    Left := 10;
+    Top := 68;
+    Width := 200;
+    Height := 30;
+    Caption := 'ОК';
+    Parent := Form1;
+    onClick := @btnOkClicked;
+  end;
+
+  if Form1.ShowModal = mrOk then Form1.Show;
 
   try
     ReportStream := CreateIcmStreamAdapter(S);
@@ -63,10 +133,8 @@ begin
           end;
         end;
 
-        for i := 0 to Instance.Customer.Emails.Count - 1 do begin
-          if Instance.Customer.Emails.Items[i].IsMain then begin
-            sendMail(Instance.Name, Instance.Customer.Emails.Items[i].Email);
-          end;
+        if (cbReady.checked) then begin
+          sendMail(Instance.Name, email.lines.text);
         end;
       end;
 
