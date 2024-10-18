@@ -17,7 +17,7 @@ var
 procedure btnOkClicked(Sender: TOBject);
 begin
   for i := 0 to Instance.StatusList.Count - 1 do begin
-    if Instance.StatusList.Items[i].OrderStatus.Key = 7 then begin
+    if Instance.StatusList.Items[i].OrderStatus.Name = 'Напоминание о звонке' then begin
       if cbReady.checked then begin
         Instance.StatusList.Items[i].PlanDate := Now;
         Instance.StatusList.Items[i].Done := True;
@@ -90,7 +90,7 @@ end;
 
 begin
   for i := 0 to Instance.StatusList.Count - 1 do begin
-    if Instance.StatusList.Items[i].OrderStatus.Key = 7 then begin
+    if Instance.StatusList.Items[i].OrderStatus.Name = 'Напоминание о звонке' then begin
       commentText := Instance.StatusList.Items[i].Comment;
       done := Instance.StatusList.Items[i].Done;
       planDate := Instance.StatusList.Items[i].PlanDate;
