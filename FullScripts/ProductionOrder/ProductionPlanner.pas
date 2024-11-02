@@ -2,11 +2,11 @@ const
   CHECK_COMPLEX_GLASS = 'SELECT                                                       ' + #13#10 +
                         '  *                                                          ' + #13#10 +
                         'FROM                                                         ' + #13#10 +
-                        '  ORDERS O                                                   ' + #13#10 +
-                        '    JOIN ORDERS_ITEMS OI ON OI.ORDERID = O.ID                ' + #13#10 +
+                        '  PRODUCTION_ORDERS PO                                       ' + #13#10 +
+                        '    JOIN ORDERS_ITEMS OI ON OI.ORDERID = PO.ORDERID          ' + #13#10 +
                         '    JOIN ORDERS_ITEMS_UNITS OIU ON OIU.ORDERITEMID = OI.ID   ' + #13#10 +
                         'WHERE                                                        ' + #13#10 +
-                        '  O.ID = :ID AND                                             ' + #13#10 +
+                        '  PO.ID = :ID AND                                            ' + #13#10 +
                         '  (OIU.GEOMETRYTYPEID > 0 OR OIU.SHPROSSID IS NOT NULL)';
 
 var
@@ -16,6 +16,7 @@ var
   labelStart: TLabel;
   dictList: IcmDictionaryList;
   dur_purch, dur_prepare, dur_binding, dur_hard_glass: Integer;
+  Glass : IowOrderItemCalculatedGlass;
 
 // См. Instance.StatusList - статусы текущего заказа
 
@@ -48,6 +49,56 @@ begin
   if (dictList.items[2].value['duration'].text <> '') and (dictList.items[2].value['cb'].checked) then SetDatabaseVariable('dur_binding', StrToInt(dictList.items[2].value['duration'].text));
   if (dictList.items[3].value['duration'].text <> '') and (dictList.items[3].value['cb'].checked) then SetDatabaseVariable('dur_hard_glass', StrToInt(dictList.items[3].value['duration'].text));
   Form1.close;
+
+  for i:=0 to Instance.Items.Count - 1 do begin
+    for j:=0 to Instance.StatusList.Count - 1 do begin
+      if VarToStr(Instance.StatusList.Items[j].PlanDate) <> '' then begin
+        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Окно') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 3027) and (Instance.Items[i].Type.Name = 'Комплект') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Сэндвич') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Москитная сетка') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 3026) and (Instance.Items[i].Type.Name = 'Набор') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 8) and (Instance.Items[i].Type.Name = 'Арка') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 3025) and (Instance.Items[i].Type.Name = 'Стеклопакет') then begin
+          Glass := Instance.Items[i].OrderUnit;
+
+          if (Glass.GeometryType.Key <> 0) OR (Glass.ShprossChamberIndex > -1) then begin
+            Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+            Instance.Items[i].Apply;
+          end;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Соединитель') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure cbClicked(Sender: TOBject);
@@ -227,10 +278,11 @@ begin
   end;
 
   numOfDays := 1;
-  if arcsEnabled then numOfDays := 1 + dur_binding;
-  if Instance.OnDemandMaterials or Instance.MaterialsPreparation then numOfDays := 1 + dur_prepare;
-  if arcsEnabled and Instance.MaterialsPreparation then numOfDays := 1 + dur_binding + dur_prepare;
-  if complexGlass then numOfDays := 1 + dur_hard_glass;
+  if (numOfDays < dur_purch + 1) and Instance.OnDemandMaterials then numOfDays := 1 + dur_purch;
+  if (numOfDays < dur_binding + 1) and arcsEnabled then numOfDays := 1 + dur_binding;
+  if (numOfDays < dur_prepare + 1) and Instance.MaterialsPreparation then numOfDays := 1 + dur_prepare;
+  if (numOfDays < dur_binding + dur_prepare + 1) and arcsEnabled and Instance.MaterialsPreparation then numOfDays := 1 + dur_binding + dur_prepare;
+  if (numOfDays < dur_hard_glass + 1) and complexGlass then numOfDays := 1 + dur_hard_glass;
 
   dictList.items[4].value['shift'].text := varToStr(numOfDays);
   dictList.items[5].value['shift'].text := varToStr(numOfDays);
