@@ -50,35 +50,13 @@ begin
   if (dictList.items[3].value['duration'].text <> '') and (dictList.items[3].value['cb'].checked) then SetDatabaseVariable('dur_hard_glass', StrToInt(dictList.items[3].value['duration'].text));
   Form1.close;
 
-  for i:=0 to Instance.Items.Count - 1 do begin
-    for j:=0 to Instance.StatusList.Count - 1 do begin
+  for i := 0 to Instance.Items.Count - 1 do begin
+    for j := 0 to Instance.StatusList.Count - 1 do begin
       if VarToStr(Instance.StatusList.Items[j].PlanDate) <> '' then begin
-        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Окно') then begin
-          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
-          Instance.Items[i].Apply;
-        end;
-
-        if (Instance.StatusList.Items[j].Key = 3027) and (Instance.Items[i].Type.Name = 'Комплект') then begin
-          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
-          Instance.Items[i].Apply;
-        end;
-
-        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Сэндвич') then begin
-          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
-          Instance.Items[i].Apply;
-        end;
-
-        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Москитная сетка') then begin
-          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
-          Instance.Items[i].Apply;
-        end;
-
-        if (Instance.StatusList.Items[j].Key = 3026) and (Instance.Items[i].Type.Name = 'Набор') then begin
-          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
-          Instance.Items[i].Apply;
-        end;
-
-        if (Instance.StatusList.Items[j].Key = 8) and (Instance.Items[i].Type.Name = 'Арка') then begin
+        if (Instance.StatusList.Items[j].Key = 2) and ((Instance.Items[i].Type.Name = 'Окно') or
+                                                       (Instance.Items[i].Type.Name = 'Соединитель') or
+                                                       (Instance.Items[i].Type.Name = 'Сэндвич') or
+                                                       (Instance.Items[i].Type.Name = 'Москитная сетка')) then begin
           Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
           Instance.Items[i].Apply;
         end;
@@ -92,7 +70,17 @@ begin
           end;
         end;
 
-        if (Instance.StatusList.Items[j].Key = 2) and (Instance.Items[i].Type.Name = 'Соединитель') then begin
+        if (Instance.StatusList.Items[j].Key = 3026) and (Instance.Items[i].Type.Name = 'Набор') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 3027) and (Instance.Items[i].Type.Name = 'Комплект') then begin
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
+          Instance.Items[i].Apply;
+        end;
+
+        if (Instance.StatusList.Items[j].Key = 8) and (Instance.Items[i].Type.Name = 'Арка') then begin
           Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
           Instance.Items[i].Apply;
         end;
@@ -103,15 +91,13 @@ end;
 
 procedure cbClicked(Sender: TOBject);
 begin
-  index := TCheckBox(Sender).Tag;
+  ind := TCheckBox(Sender).Tag;
   if TCheckBox(Sender).checked then begin
-    dictList.items[index].value['panel'].font.color := clNone;
-    dictList.items[index].value['shift'].enabled := True;
-    dictList.items[index].value['duration'].enabled := True;
+    dictList.items[ind].value['panel'].font.color := clNone;
+    dictList.items[ind].value['panel'].enabled := True;
   end else begin
-    dictList.items[index].value['panel'].font.color := clGray;
-    dictList.items[index].value['shift'].enabled := False;
-    dictList.items[index].value['duration'].enabled := False;
+    dictList.items[ind].value['panel'].font.color := clGray;
+    dictList.items[ind].value['panel'].enabled := False;
   end;
 end;
 
