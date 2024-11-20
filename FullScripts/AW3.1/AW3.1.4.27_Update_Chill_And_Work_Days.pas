@@ -1,5 +1,8 @@
 const
-  SELECT_SCRIPT_EV = 'SELECT HANDLERTITLE, SCRIPT FROM EVENTHANDLERS WHERE HANDLERTITLE IN (''Установка минимального срока готовности заказа'', ''Установка минимального срока изготовления заказа'')';
+  SELECT_SCRIPT_EV = 'SELECT HANDLERTITLE, SCRIPT FROM EVENTHANDLERS WHERE HANDLERTITLE IN ' + #13#10 +
+                     '(''Установка минимального срока готовности заказа'', ' + #13#10 +
+                     '''Установка минимального срока изготовления заказа'',' + #13#10 +
+                     '''Проверка на корректность срока производства'')';
 
   UPDATE_EVENT_HANDLER = 'UPDATE EVENTHANDLERS SET SCRIPT = :SCRIPT WHERE HANDLERTITLE = :HANDLERTITLE';
 
@@ -31,9 +34,9 @@ begin
     S := CreateObjectSession('');
     sFile := TStringList.Create;
     sFile.LoadFromFile(vFileName);
-    
+
     scripts := S.QueryRecordList(SELECT_SCRIPT_EV, empty);
-    
+
     for j := 0 to scripts.count - 1 do begin
       script := scripts.Items[j].value['SCRIPT'];
 
@@ -89,7 +92,7 @@ begin
       script := 'const' + #13#10 +
                 '  CHILL_DAY = [' + chillDays + '];' + #13#10 +
                 '  WORK_DAY = [' + workDays + '];' + #13#10 + #13#10 +
-                copy(script, finish2 + 5, length(script) - finish2 - 5);
+                copy(script, finish2 + 5, length(script) - finish2);
 
       S.ExecSQL(UPDATE_EVENT_HANDLER, MakeDictionary(['HANDLERTITLE', scripts.Items[j].value['HANDLERTITLE'], 'SCRIPT', script]));
       S.Commit;
