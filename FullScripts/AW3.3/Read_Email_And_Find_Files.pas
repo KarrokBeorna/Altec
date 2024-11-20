@@ -25,6 +25,7 @@ begin
 end;
 
 var
+  LS: IpubLogService;
   MS: IpubMailer;
   ML: IpubEmailList;
   M: IpubEmail;
@@ -35,6 +36,7 @@ var
   msgID: Extended;
 
 begin
+  LS := ServiceProvider.GetService(IpubLogService);
   MS := CreateMailer;
   reportNames := TStringList.Create;
   S := CreateObjetSession;
@@ -84,15 +86,15 @@ begin
               info := copy(info, 10, Length(info));
             end;
 
-            //if not MS.DeleteEmail(M) then RaiseException(MS.LastError);      // пытаемся удалить письмо с сервера
-            Inc(msgCount, 1);                                                  // наращиваем счетчик принятых обращений
+            if not MS.DeleteEmail(M) then RaiseException(MS.LastError);        // пытаемся удалить письмо с сервера
           end;
         end;
+        Inc(msgCount, 1);
       end;
     end;
 
     if msgCount > 0 then begin
-      {SetDatabaseVariable('DIADOC_EMAIL_MSG_ID', M.MsgID);
+      SetDatabaseVariable('DIADOC_EMAIL_MSG_ID', M.MsgID);
 
       for i := 0 to reportNames.count - 1 do begin
         temp := S.QueryRecord(GET_CONTRACT_ID, MakeDictionary(['TITLE', reportNames[i]]));
@@ -110,13 +112,12 @@ begin
         end;
       end;
 
-      S.Commit();}
+      S.Commit();
     end;
   end;
 
   ML := Empty;
   MS := Empty;
 
-  ShowMessage('Получено документов с почты: ' + IntToStr(reportNames.count));
-  ShowMessage('Получено писем с почты: ' + IntToStr(msgCount));
+  LS.WriteEvent(0, plmtInfo, 'DIADOC', 'Подписано документов: ' + varToStr(reportNames.count) + ', писем прочитано: ' + varToStr(msgCount));
 end;
