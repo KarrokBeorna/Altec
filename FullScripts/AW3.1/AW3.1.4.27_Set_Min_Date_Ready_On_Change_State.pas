@@ -22,8 +22,6 @@ const
                       '  RSF.NAME AS FURNNAME,                                                                                                   ' + #13#10 +
                       '  COALESCE(MF.GEOMETRY, ISD.VALUE1) AS NESTANDART,                                                                        ' + #13#10 +
                       '  MF.SHPROSSES AS RASKLADKA,                                                                                              ' + #13#10 +
-                      '  GG.NAME AS PLENKA,                                                                                                      ' + #13#10 +
-                      '  GG2.NAME AS NESTANDART_STVORKA,                                                                                         ' + #13#10 +
                       '  M.INCOLORID AS INCOLOR,                                                                                                 ' + #13#10 +
                       '  M.OUTCOLORID AS OUTCOLOR                                                                                                ' + #13#10 +
                       'FROM                                                                                                                      ' + #13#10 +
@@ -37,21 +35,34 @@ const
                       '      LEFT JOIN R_SYSTEMTYPES RSTP ON RSTP.TYPEID = RSP.SYSTEMTYPE                                                        ' + #13#10 +
                       '    LEFT JOIN R_SYSTEMS RSF ON RSF.RSYSTEMID = M.SYSFURNID                                                                ' + #13#10 +
                       '    LEFT JOIN R_SYSTEMS RSG ON RSG.RSYSTEMID = GPT.RSYSTEMID                                                              ' + #13#10 +
-                      '    LEFT JOIN ITEMSDETAIL ITD ON ITD.ORDERITEMSID = OI.ORDERITEMSID                                                       ' + #13#10 +
-                      '      LEFT JOIN GROUPGOODS GG ON GG.GRGOODSID = ITD.GRGOODSID AND GG.NAME CONTAINING ''Пленка''                           ' + #13#10 +
-                      '    LEFT JOIN ITEMSDETAIL ITD2 ON ITD2.ORDERITEMSID = OI.ORDERITEMSID AND (ITD2.ANG1 <> 45 AND ITD2.ANG1 <> 90 AND ITD2.ANG1 <> 0 OR ITD2.ANG2 <> 45 AND ITD2.ANG2 <> 90 AND ITD2.ANG2 <> 45)' + #13#10 +
-                      '      LEFT JOIN GROUPGOODS GG2 ON GG2.GRGOODSID = ITD2.GRGOODSID AND GG2.GGTYPEID = 1 AND GG2.NAME CONTAINING ''Створка'' ' + #13#10 +
                       'WHERE                                                                                                                     ' + #13#10 +
                       '  OI.ORDERID = :ORDERID';
 
+  SELECT_PLENKA = 'SELECT DISTINCT                                                                            ' + #13#10 +
+                  '  GG.NAME AS PLENKA                                                                        ' + #13#10 +
+                  'FROM                                                                                       ' + #13#10 +
+                  '  ORDERITEMS OI                                                                            ' + #13#10 +
+                  '    JOIN ITEMSDETAIL ITD ON ITD.ORDERITEMSID = OI.ORDERITEMSID                             ' + #13#10 +
+                  '    JOIN GROUPGOODS GG ON GG.GRGOODSID = ITD.GRGOODSID AND GG.NAME CONTAINING ''Пленка''   ' + #13#10 +
+                  'WHERE                                                                                      ' + #13#10 +
+                  '  OI.ORDERID = :ORDERID';
+                      
+  SELECT_NESTANDART = 'SELECT DISTINCT                                                                                                                                                                         ' + #13#10 +
+                      '  GG2.NAME AS NESTANDART_STVORKA                                                                                                                                                        ' + #13#10 +
+                      'FROM                                                                                                                                                                                    ' + #13#10 +
+                      '  ORDERITEMS OI                                                                                                                                                                         ' + #13#10 +
+                      '    JOIN ITEMSDETAIL ITD2 ON ITD2.ORDERITEMSID = OI.ORDERITEMSID AND (ITD2.ANG1 <> 45 AND ITD2.ANG1 <> 90 AND ITD2.ANG1 <> 0 OR ITD2.ANG2 <> 45 AND ITD2.ANG2 <> 90 AND ITD2.ANG2 <> 0) ' + #13#10 +
+                      '    JOIN GROUPGOODS GG2 ON GG2.GRGOODSID = ITD2.GRGOODSID AND GG2.GGTYPEID = 1 AND GG2.NAME CONTAINING ''Створка''                                                                      ' + #13#10 +
+                      'WHERE                                                                                                                                                                                   ' + #13#10 +
+                      '  OI.ORDERID = :ORDERID';
 
 var
   S: IomSession;
-  ORDNO: String;
+  plenka, stvNest: String;
   userDeparts, fullInfo: IcmDictionaryList;
   userRoznica: Boolean = False;
   numOfWork: Integer = 4;
-  userFieldID, UFValueID, countedDays: Integer = 0;
+  userFieldID, trueUserFieldID, countedDays: Integer = 0;
   resultDay: TDateTime;
 
 function ContainsInArray(value: variant; arr: Array of Variant): Boolean;
@@ -73,9 +84,9 @@ begin
     if (numOfWork < 15) and (fullInfo.items[z].value['GLASSNAME'] = 'Заказной стеклопакет') and (fullInfo.items[z].value['RASKLADKA'] > 0) then numOfWork := 15;
     if (numOfWork < 18) and (fullInfo.items[z].value['GLASSNAME'] = 'Заказной стеклопакет') and (fullInfo.items[z].value['NESTANDART'] > 0) then numOfWork := 18;
     if (numOfWork < 27) and ((fullInfo.items[z].value['INCOLOR'] <> 1) or (fullInfo.items[z].value['OUTCOLOR'] <> 1)) then numOfWork := 27;
-    if (numOfWork < 31) and not VarIsNull(fullInfo.items[z].value['PLENKA']) and (fullInfo.items[z].value['PLENKA'] <> '') then numOfWork := 31;
+    if (numOfWork < 31) and not VarIsNull(plenka) and (plenka <> '') then numOfWork := 31;
     if (numOfWork < 71) and ((not ContainsInArray(fullInfo.items[z].value['FURNNAME'], ['ROTO NX', 'VORNE', 'Без фурнитуры', 'Фурнитура для алюминия'])) or
-                             (not VarIsNull(fullInfo.items[z].value['NESTANDART_STVORKA']) and (fullInfo.items[z].value['NESTANDART_STVORKA'] <> ''))) then numOfWork := 71;
+                             (not VarIsNull(stvNest) and (stvNest <> ''))) then numOfWork := 71;
     if (numOfWork < 75) and (fullInfo.items[z].value['PROFTYPE'] = 'Алюминий') then numOfWork := 75;
   end;
 end;
@@ -108,6 +119,8 @@ begin
   trueUserFieldID := S.QueryValue(SELECT_USERFIELD_ID, MakeDictionary(['CODE', 'srok_script']));
   userDeparts := S.QueryRecordList(SELECT_USER_DEPARTS, MakeDictionary(['ID', UserID]));
   fullInfo := S.QueryRecordList(SELECT_FULL_INFO, MakeDictionary(['ORDERID', OrderID]));
+  plenka := Document.Session.QueryValue(SELECT_PLENKA, MakeDictionary(['ORDERID', OrderID]));
+  stvNest := Document.Session.QueryValue(SELECT_NESTANDART, MakeDictionary(['ORDERID', OrderID]));
 
   for i := 0 to userDeparts.count - 1 do begin
     if userDeparts[i].value['TITLE'] = 'Розница' then userRoznica := True;
