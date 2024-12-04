@@ -6,7 +6,6 @@ const
   UPDATE_ARTICULES = 'UPDATE VIRTARTICULES V SET V.WGRPRICEID = :WGRPRICEID WHERE V.ARTICULID = :SELECTID';
 
 var
-  SQLparams: IcmDictionary;
   S: IomSession;
 
 begin
