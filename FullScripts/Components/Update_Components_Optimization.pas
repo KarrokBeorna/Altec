@@ -1,3 +1,9 @@
+{
+ * Для всех выделенных записей в представлении "Компоненты" можно поменять группу
+ * оптимизации и длину хлыста, однако это применится лишь к тем артикулам, у кого
+ * единица измерения из группы "Длина"
+}
+
 const
   UPDATE_ARTICUL = 'UPDATE VIRTARTICULES V'                                + #13#10 +
                    'SET V.OG_ID = :OG_ID, V.BEAMSIZEID = :BEAMSIZEID'      + #13#10 +
@@ -11,27 +17,22 @@ const
 
 var
   S: IomSession;
-  SQLparams: IcmDictionary;
   ObjectsUIService: IpubObjectsUIService;
   OG: IowOptimizationGroup;
   MU: IowMeasureUnit;
 
 begin
   S := CreateObjectSession;
-  SQLparams := CreateDictionary;
   ObjectsUIService := ServiceProvider.GetService(IpubObjectsUIService);
   OG := ObjectsUIService.SelectObject('IowOptimizationGroup');
   MU := ObjectsUIService.SelectObject('IowMeasureUnit');
 
   try
     for i := 0 to SelectedRecords.Count - 1 do begin
-      SQLparams.Clear;
-      SQLparams.Add('SELECTID', SelectedRecords.Items[i]['ARTICULID']);
-      SQLparams.Add('OG_ID', OG.key);
-      SQLparams.Add('BEAMSIZEID', MU.key);
-      S.ExecSQL(UPDATE_ARTICUL, SQLparams);
+      S.ExecSQL(UPDATE_ARTICUL, MakeDictionary(['SELECTID', SelectedRecords.Items[i]['ARTICULID'],
+                                                'OG_ID', OG.key,
+                                                'BEAMSIZEID', MU.key]));
     end;
-    //showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
     S.Commit;
   except
     S.Rollback;
