@@ -1,3 +1,17 @@
+{
+ * Данная кнопка позволяет выгружать прайс-лист в формате .csv, где каждая строка
+ * будет в формате
+ * "Название конструкции [ширина]x[высота];Цена"
+ *
+ * Например:
+ * Окно одностворчатое "Эконом" 500x1000;9098
+ * Окно одностворчатое "Эконом" 500x1100;9622
+ * Окно одностворчатое "Эконом" 500x1200;10153
+ * Окно одностворчатое "Эконом" 500x1300;10677
+ * Окно одностворчатое "Эконом" 500x1400;11207
+ * ...
+}
+
 const
   selectPriceList =
    'SELECT                                                          ' + #13#10 +
@@ -22,8 +36,7 @@ const
 var
   vFileName, PT_IDs : string;
   session: IomSession;
-  priceList, SQLD: variant;
-  i: integer;
+  priceList: variant;
   buf: TStringList;
 
 procedure createTable(initialRow, initialColumn: Integer);
@@ -35,24 +48,18 @@ end;
 
 begin
   if PromptForFileName(vFileName, 'CSV files (*.csv)|*.csv', '', 'Место сохранения', 'C:\', true) then begin
-// Если что это не я дурак, а модуль Дельфи, работающий с БД:
-// он не даёт прописать в запросе *** WHERE PT.PT_ID in (:PT_IDs) ***,
-// чтобы в запрос потом добавлять только строку из IDs
     PT_IDs := 'PT.PT_ID in (';
     for i := 0 to SelectedRecords.Count - 2 do begin
-      PT_IDs := PT_IDs + varToStr(SelectedRecords.items[i].Value['PT_ID']) + ',';
+      PT_IDs := PT_IDs + varToStr(SelectedRecords.items[i].Value['PT_ID']) + ', ';
     end;
     PT_IDs := PT_IDs + varToStr(SelectedRecords.items[SelectedRecords.Count - 1].Value['PT_ID']) + ')';
 
     session := CreateObjectSession();
-    SQLD := MakeDictionary(['PT_IDs', PT_IDs]);
     priceList := session.QueryRecordList(selectPriceList + PT_IDs, empty);
 
     buf := TStringList.Create;
     createTable(1, 1);
     buf.SaveToFile(vFileName + '.csv');
     buf.Free;
-
-    session.Commit;
   end;
 end;
