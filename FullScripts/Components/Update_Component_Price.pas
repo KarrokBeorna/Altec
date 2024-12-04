@@ -1,3 +1,9 @@
+{
+  * Для всех выделенных записей в представлении "Компоненты"
+  * устанавливает "Закупочную цену", указанную в поле для ввода.
+  * При этом данная цена попадает в "Лог цен" каждого выбранного артикула.
+}
+
 const
   UPDATE_PRICE = 'INSERT INTO ARTPRICES (ARTICULID, PRICE, EFFECTDATE) VALUES (:ARTICULID, :PRICE, CURRENT_TIMESTAMP)';
 
@@ -20,7 +26,8 @@ begin
       else
         PriceValue := Null;
 
-      Session.ExecSQL(UPDATE_PRICE, MakeDictionary(['ARTICULID', SelectedRecords.Items[i]['ARTICULID'], 'PRICE', PriceValue]));
+      Session.ExecSQL(UPDATE_PRICE, MakeDictionary(['ARTICULID', SelectedRecords.Items[i]['ARTICULID'],
+                                                    'PRICE', PriceValue]));
     end;
     Session.Commit;
     Form1.close;
