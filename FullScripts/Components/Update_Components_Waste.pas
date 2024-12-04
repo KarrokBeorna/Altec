@@ -1,3 +1,9 @@
+{
+ * Для всех выделенных записей в представлении "Компоненты" устанавливает
+ * процент отхода, равным значению из поля для ввода.
+ * Если поле оставить пустым, то процент отхода выставится также пустым.
+}
+
 const
   UPDATE_ARTICULES = 'UPDATE VIRTARTICULES V SET V.WASTE = :PROCENTWASTE WHERE V.ARTICULID = :SELECTID';
 
@@ -6,38 +12,33 @@ var
   btnOk: TButton;
   procentPanel: TGroupBox;
   procent: TRichEdit;
-  SQLparams: IcmDictionary;
   Session: IomSession;
   text: variant;
-
 
 procedure btnOkClicked(Sender: TOBject);
 begin
   Session := CreateObjectSession;
-  SQLparams := CreateDictionary;
 
   try
     for i := 0 to SelectedRecords.Count - 1 do begin
-      if TRIM(procent.Lines.Text) <> '' then
-        text := procent.Lines.Text
-      else
+      if TRIM(procent.Lines.Text) <> '' then begin
+        text := procent.Lines.Text;
+      end else begin
         text := Null;
-      SQLparams.clear;
-      SQLparams.Add('SELECTID', SelectedRecords.Items[i]['ARTICULID']);
-      SQLparams.Add('PROCENTWASTE', text);
-      Session.ExecSQL(UPDATE_ARTICULES, SQLparams);
+      end;
+
+      Session.ExecSQL(UPDATE_ARTICULES, MakeDictionary(['SELECTID', SelectedRecords.Items[i]['ARTICULID'],
+                                                        'PROCENTWASTE', text]));
     end;
-    //showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
     Session.Commit;
     Form1.close;
   except
     Session.Rollback;
-    SHOWMESSAGE('Оставьте поле пустым или ведите численное значение отхода');
+    ShowMessage('Оставьте поле пустым или ведите численное значение отхода');
   end;
 end;
 
 begin
-
 Form1 := TForm.Create(Application);
  with Form1 do begin
    Width := 205;
