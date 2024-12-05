@@ -1,10 +1,15 @@
+{
+  * Удаляем все выделенные элементы из состава, если нет формул у компонента в составе
+  *
+  * Нужно добавить удаление из SOSTAVDETAILS и SOSTAVFORMULA
+}
+
 const
   DELETE_FROM_SOSTAV = 'DELETE FROM E_VALUES WHERE EVID IN (SELECT ARTICULID FROM VIRTARTICULES WHERE AR_ART IN (';
 
 var
   objectsIDs: String;
   S: IomSession;
-
 
 begin
   objectsIDs := '';
