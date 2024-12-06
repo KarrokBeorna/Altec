@@ -1,3 +1,8 @@
+{
+  * Скрипт позволяет печатать отчёт "Договор" без захода в меню "Отчёты".
+  * После исполнения сохраняет отчёт во "Вложениях" заказа
+}
+
 const
   GET_REPORTBLOB = 'SELECT REPORTBLOB FROM REPORTS WHERE NAME = :NAME AND REPORTTYPE = 0 AND DELETED = 0';
 
