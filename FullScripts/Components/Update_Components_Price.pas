@@ -1,3 +1,24 @@
+{
+  * В файле, полученном после использования кнопки "Выгрузка компонентов в CSV-файл",
+  * обновляем цены в 8 столбце ("Новая закупочная цена").
+  *
+  * Затем запускаем данных скрипт, выбираем файл с новыми ценами.
+  * Вас перекинет на вкладку "Переоценка" и создастся новая переоценка,
+  * куда попадут все артикулы, у которых вы изменили цены.
+  *
+  * Поиск компонентов, у которых нужно обновить цену производится по артикулу.
+  * При необходимости можно заменить на поиск по доп. артикулу, наименованию
+  * или же по всему сразу.
+  *
+  * В случае, если такой артикул в программе не найден, то выводится ошибка
+  * "[Артикул] (№ строки в CSV-файле) не найден" и переоценка не создается.
+  * Вам нужно будет проверить, не тронули ли вы артикул.
+  *
+  * Также при некорректном вводе новой цены, которая не будет числом, выведется
+  * ошибка "На [артикуле] (№ строки в CSV-файле) стоит пустая цена" и
+  * переоценка не будет создана.
+}
+
 const
   FIND_ARTICULID = 'SELECT ARTICULID FROM VIRTARTICULES WHERE AR_ART = :AR_ART';
 
@@ -51,18 +72,16 @@ begin
       if currStr <> '' then begin
         entryDict := getDictionaryFromEntry(currStr);
 
-        ART := entryDict['0'];
-        NAME := entryDict['1'];
-        DOP_ART := entryDict['2'];
-        C_TYPE := entryDict['3'];
-        MD_NAME := entryDict['4'];
-        OLD_PRICE := entryDict['5'];
-        PRICE := entryDict['6'];
+        ART := entryDict['1'];
+        NAME := entryDict['2'];
+        DOP_ART := entryDict['3'];
+        C_TYPE := entryDict['4'];
+        MD_NAME := entryDict['5'];
+        OLD_PRICE := entryDict['6'];
+        PRICE := entryDict['7'];
 
         if OLD_PRICE <> PRICE then begin
-          ARTICULIDs := S.QueryRecordList(FIND_ARTICULID, MakeDictionary([
-            'AR_ART', ART
-          ]));
+          ARTICULIDs := S.QueryRecordList(FIND_ARTICULID, MakeDictionary(['AR_ART', ART]));
 
           for z := 0 to ARTICULIDs.Count - 1 do begin
             ARTICULID := ARTICULIDs.Items[z].value['ARTICULID'];
