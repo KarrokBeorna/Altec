@@ -1,3 +1,42 @@
+{
+  * Импортирует в уже созданные системы профиля основные профиля.
+  * У уже имеющихся артикулов следите, чтобы были удалены части окна, либо чтобы
+  * в файле они не повторялись с уже заведенными частями.
+  *
+  * Загружаемый файл должен иметь следующую структуру, разделённую ";":
+  * - Система профиля
+  * - Артикул
+  * - Наименование
+  * - Доп. артикул
+  * - Единица измерения
+  * - Закупочная цена
+  * - Группа переоценки
+  * - Ширина фальца
+  * - Назначение (0 - любой, 1 - оконный, 2 - дверной)
+  * - Части и армирования
+  *
+  * Части и армирования имеют следующую структуру, разделённую "|":
+  * - Наименование части (Рама/Створка/Импост/Штульп/Брусок/Порог/Цоколь)
+  * - Параметр A
+  * - Параметр B
+  * - Параметр C
+  * - Параметр D
+  * - Армирование
+  * - Приоритет
+  *
+  * Для добавления нескольких частей изделий используйте разделитель ":"
+  *
+  * Армирование имеет следующую структуру, раздёлённую "?":
+  * - Артикул армирования
+  * - Декремент
+  *
+  * Для добавления нескольких армирований используйте разделитель "="
+  *
+  * Примеры конечной строки:
+  * 1) KBE 58;318;Створка 82 мм;318;Метр;134;;48;1;Створка|82||62|67|4|112089_1.4?120=112089_2.0?120|0
+  * 2) ТАТПРОФ 50;F50.01.01;Профиль стойки/ригеля 72мм;F50.01.01;Метр;1834;;50;2;Рама|50||40|37,5|6||0:Импост|25||20|18,75|6||0:Брусок|50||40|37,5|6||0
+}
+
 const
   FIND_SYSTEM = 'SELECT FIRST 1 FIRMID FROM R_FIRMPROFIL WHERE FP_NAME = :SYSTEMNAME';
   FIND_MEASURE = 'SELECT FIRST 1 DOPMEASUREID FROM DOPMEASURE WHERE MD_LONGNAME = :MEASURENAME';
@@ -118,12 +157,13 @@ begin
   if RECALCNAME <> '' then RecalcGroup := S.OpenObject(IowRecalcGroup, RECALCID);
   Purpose := S.OpenObject(IowProfilePurpose, PURPOSEID);
 
-//  MAINPROFILEID := S.QueryValue(FIND_ARTICUL, MakeDictionary(['AR_ART', MARKING]));
-//  if MAINPROFILEID > 0 then begin
-//    MainProfile := S.OpenObject(IowMainProfile, MAINPROFILEID);
-//  end else begin
+  MAINPROFILEID := S.QueryValue(FIND_ARTICUL, MakeDictionary(['AR_ART', MARKING]));
+  if MAINPROFILEID > 0 then begin
+    MainProfile := S.OpenObject(IowMainProfile, MAINPROFILEID);
+    MainProfile.Take;
+  end else begin
     MainProfile := S.NewObject(IowMainProfile);
-//  end;
+  end;
 
   MainProfile.ProfileSystem := ProfileSystem;
   MainProfile.Marking := MARKING;
@@ -154,12 +194,13 @@ begin
   Measure := S.OpenObject(IowMeasureUnit, MEASUREID);
   if RECALCNAME <> '' then RecalcGroup := S.OpenObject(IowRecalcGroup, RECALCID);
 
-//  ARMOURINGID := S.QueryValue(FIND_ARTICUL, MakeDictionary(['AR_ART', MARKING]));
-//  if ARMOURINGID > 0 then begin
-//    ArmouringProfile := S.OpenObject(IowArmouringProfile, ARMOURINGID);
-//  end else begin
+  ARMOURINGID := S.QueryValue(FIND_ARTICUL, MakeDictionary(['AR_ART', MARKING]));
+  if ARMOURINGID > 0 then begin
+    ArmouringProfile := S.OpenObject(IowArmouringProfile, ARMOURINGID);
+    ArmouringProfile.Take;
+  end else begin
     ArmouringProfile := S.NewObject(IowArmouringProfile);
-//  end;
+  end;
 
   ArmouringProfile.Marking := MARKING;
   ArmouringProfile.Name := NAME;
