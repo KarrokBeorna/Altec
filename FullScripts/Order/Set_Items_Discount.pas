@@ -1,16 +1,17 @@
+{
+  * Скрипт позволяет проставить всем выделенным изделиям в заказе скидку,
+  * указанную в диалоговой форме. Скидка может быть только целочисленной
+}
+
 var
   Form1: TForm;
   btnOk: TButton;
   procentPanel: TGroupBox;
   procent: TRichEdit;
   OrderItem: IowOrderItem;
-  S: IomSession;
-
 
 procedure btnOkClicked(Sender: TOBject);
 begin
-  S := CreateObjectSession;
-
   try
     for i := 0 to Selected.Count - 1 do begin
       OrderItem := IowOrderItem(Selected.Objects[i]);
@@ -21,12 +22,10 @@ begin
       end;
       OrderItem.apply;
     end;
-    //showmessage('Обновлено записей: ' + IntToStr(SelectedRecords.Count));
-    S.Commit;
+
     Form1.close;
   except
-    S.Rollback;
-    SHOWMESSAGE('Оставьте поле пустым или введите численное значение отхода');
+    showmessage('Оставьте поле пустым или введите численное значение');
   end;
 end;
 
