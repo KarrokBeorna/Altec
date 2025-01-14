@@ -1,8 +1,17 @@
+{
+  * Скрипт позволяет вносить записи в диспетчеризацию "Напоминание о звонке".
+  * - Первая панель отвечает за предыдущий звонок и при необходимости оставить
+  * комментарий.
+  * - Вторая панель отвечает за назначение нового звонка и появляется лишь при
+  * нажатии галочки "Новое напоминание". На данной панели помимо примечания 
+  * есть ещё дата и время звонка с интервалом 30 минут.
+}
+
 var
   Form1: TForm;
   btnOk: TButton;
-  date, dateOld: TDateTimePicker;
-  time, timeOld: TComboBox;
+  dateNew, dateOld: TDateTimePicker;
+  timeNew, timeOld: TComboBox;
   timeStrings: TStringList;
   cbNew, cbReady: TCheckBox;
   PanelComment, PanelCommentOld: TGroupBox;
@@ -19,7 +28,8 @@ begin
   for i := 0 to Instance.StatusList.Count - 1 do begin
     if Instance.StatusList.Items[i].OrderStatus.Name = 'Напоминание о звонке' then begin
       if cbReady.checked then begin
-        Instance.StatusList.Items[i].PlanDate := Now;
+        Instance.StatusList.Items[i].PlanDate := Date;
+        Instance.StatusList.Items[i].PlanTime := Time;
         Instance.StatusList.Items[i].Done := True;
         Instance.StatusList.Items[i].Comment := commentOld.lines.text;
         Instance.StatusList.Items[i].apply;
@@ -27,24 +37,27 @@ begin
       end;
 
       if cbNew.checked then begin
-        if time.text = '--Время--' then begin
+        if timeNew.text = '--Время--' then begin
           showMessage('Выберите время');
           close := False;
         end else begin
           Instance.apply;
           Instance.Session.Commit;
-          Instance.StatusList.Items[i].PlanDate := StrToDateTime(Copy(dateTimeToStr(date.time), 0, 11) + time.text + ':00');
+          Instance.StatusList.Items[i].PlanDate := dateNew.date;
+          Instance.StatusList.Items[i].PlanTime := StrToTime(timeNew.text + ':00');
           Instance.StatusList.Items[i].Done := False;
           Instance.StatusList.Items[i].Comment := comment.lines.text;
           Instance.StatusList.Items[i].apply;
-          Instance.apply;
-          Instance.Session.Commit;
           close := True;
         end;
       end;
     end;
   end;
-  if close then Form1.close;
+  if close then begin
+    Instance.apply;
+    Instance.Session.Commit;
+    Form1.close;
+  end;
 end;
 
 procedure cbReadyClicked(Sender: TOBject);
@@ -64,8 +77,8 @@ procedure cbNewClicked(Sender: TOBject);
 begin
   if cbNew.checked then begin
     Form1.Height := 285;
-    date.visible := True;
-    time.visible := True;
+    dateNew.visible := True;
+    timeNew.visible := True;
     panelComment.visible := True;
     comment.visible := True;
     btnOk.Top := PanelComment.Top + 73;
@@ -73,8 +86,8 @@ begin
     btnOk.enabled := True;
   end else begin
     Form1.Height := 285 - 98;
-    date.visible := False;
-    time.visible := False;
+    dateNew.visible := False;
+    timeNew.visible := False;
     panelComment.visible := False;
     comment.visible := False;
     btnOk.Top := cbNew.Top + 20;
@@ -148,7 +161,7 @@ begin
    Height := 70;
    Top := cbReady.Top + 20;
    Left := 5;
-   caption := 'Примечание прошлого напоминания';
+   caption := 'Результат звонка';
    Parent := Form1;
  end;
 
@@ -173,8 +186,8 @@ begin
    onClick := @cbNewClicked;
  end;
 
- date := TDateTimePicker.Create(Application);
- with date do begin
+ dateNew := TDateTimePicker.Create(Application);
+ with dateNew do begin
    Left := 10;
    Top := cbNew.Top + 20;
    Width := 100;
@@ -182,8 +195,8 @@ begin
    Parent := Form1;
  end;
 
- time := TComboBox.Create(Application);
- with time do begin
+ timeNew := TComboBox.Create(Application);
+ with timeNew do begin
    Left := 115;
    Top := cbNew.Top + 20;
    Width := 95;
@@ -197,7 +210,7 @@ begin
  with PanelComment do begin
    Width := 210;
    Height := 70;
-   Top := time.Top + 25;
+   Top := timeNew.Top + 25;
    Left := 5;
    caption := 'Примечание нового напоминания';
    visible := False;
