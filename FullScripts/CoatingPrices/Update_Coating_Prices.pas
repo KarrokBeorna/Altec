@@ -1,8 +1,14 @@
+{
+  * Скрипт позволяет обновлять цены на покрытия у выделенных компонентов
+  * в прайс-листе. Для всех будет проставлена одинаковая цена за внешнее,
+  * внутреннее и двустороннее покрытия.
+}
+
 var
   Form1: TForm;
   btnOk: TButton;
-  pricePanelOuter, pricePanelInner: TGroupBox;
-  priceOuter, priceInner: TEdit;
+  pricePanelOuter, pricePanelInner, pricePanelDouble: TGroupBox;
+  priceOuter, priceInner, priceDouble: TEdit;
   item: IowCoatingPriceBaseValue;
 
 procedure btnOkClicked(Sender: TOBject);
@@ -12,7 +18,8 @@ begin
       item := IowCoatingPriceBaseValue(Selected.Objects[i]);
       item.OuterPrice := StrToFloat(priceOuter.text);
       item.InnerPrice := StrToFloat(priceInner.text);
-      item.Apply;
+      item.BothPrice := StrToFloat(priceDouble.text);
+      //item.Apply;
     end;
     Form1.Close;
   except
@@ -24,7 +31,7 @@ begin
   Form1 := TForm.Create(Application);
   with Form1 do begin
     Width := 195;
-    Height := 153;
+    Height := 196;
     Caption := 'Стоимость на покрытие';
     Position := poScreenCenter;
     BorderIcons := biSystemMenu;
@@ -69,10 +76,29 @@ begin
     Parent := pricePanelInner;
   end;
 
+  pricePanelDouble := TGroupBox.Create(Application);
+  with pricePanelDouble do begin
+    Width := 180;
+    Height := 40;
+    Top := 88;
+    Left := 5;
+    Caption := 'Цена за двустор. покрытие';
+    Parent := Form1;
+  end;
+
+  priceDouble := TEdit.Create(Application);
+  with priceDouble do begin
+    Left := 5;
+    Top := 15;
+    Width := 170;
+    Height := 20;
+    Parent := pricePanelDouble;
+  end;
+
   btnOk := TButton.Create(Application);
   with btnOk do begin
     Left := 15;
-    Top := 90;
+    Top := 133;
     Width := 158;
     Height := 30;
     Caption := 'Обновить';
