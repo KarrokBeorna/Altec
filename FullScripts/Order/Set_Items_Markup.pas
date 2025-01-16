@@ -3,6 +3,11 @@
   * стоимости, либо введённую сумму распределит между всеми элементами заказа,
   * при этом распределение будет в зависимости от стоимости элемента
   * в общей сумме стоимостей выделенных элементов.
+  * Работает только по типам изделий:
+  * - Оконная конструкция (без учёта её дополнений и услуг)
+  * - Стеклопакет
+  * - Сэндвич
+  * - Москитная сетка
 }
 
 var
@@ -25,89 +30,95 @@ begin
   itemsCalcPrice := 0;
 
   for i := 0 to Instance.Count - 1 do begin
-    itemsCalcPrice := itemsCalcPrice + Instance[i].CalculatedPrice * Instance[i].Quantity;
+    if Instance[i].Type.Key <= 3 then begin
+      itemsCalcPrice := itemsCalcPrice + Instance[i].CalculatedPrice * Instance[i].Quantity;
 
-    for j := 0 to Instance[i].Extras.Count - 1 do begin
-      itemsCalcPrice := itemsCalcPrice + Instance[i].Extras[j].CalculatedPrice * Instance[i].Extras[j].Quantity;
-    end;
+      {for j := 0 to Instance[i].Extras.Count - 1 do begin
+        itemsCalcPrice := itemsCalcPrice + Instance[i].Extras[j].CalculatedPrice * Instance[i].Extras[j].Quantity * Instance[i].Quantity;
+      end;
 
-    for j := 0 to Instance[i].Services.Count - 1 do begin
-      itemsCalcPrice := itemsCalcPrice + Instance[i].Services[j].CalculatedPrice * Instance[i].Services[j].QtyFloat;
+      {for j := 0 to Instance[i].Services.Count - 1 do begin
+        itemsCalcPrice := itemsCalcPrice + Instance[i].Services[j].CalculatedPrice * Instance[i].Quantity;
+      end;}
     end;
   end;
 
   try
     for i := 0 to Instance.Count - 1 do begin
-      OrderItem := Instance[i];
+      if Instance[i].Type.Key <= 3 then begin
+        OrderItem := Instance[i];
 
-      if procentRB.checked then begin
-        if trim(procent.Lines.Text) <> '' then begin
-          OrderItem.UserPrice := True;
-          OrderItem.Price := StrToFloat(FormatFloat('0.00', OrderItem.CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
+        if procentRB.checked then begin
+          if trim(procent.Lines.Text) <> '' then begin
+            OrderItem.UserPrice := True;
+            OrderItem.Price := StrToFloat(FormatFloat('0.00', OrderItem.CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
 
-          for j := 0 to OrderItem.Extras.Count - 1 do begin
-            OrderItem.Extras[j].UserPrice := True;
-            OrderItem.Extras[j].Price := StrToFloat(FormatFloat('0.00', OrderItem.Extras[j].CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
-            OrderItem.Extras[j].Apply();
+            {for j := 0 to OrderItem.Extras.Count - 1 do begin
+              OrderItem.Extras[j].UserPrice := True;
+              OrderItem.Extras[j].Price := StrToFloat(FormatFloat('0.00', OrderItem.Extras[j].CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
+              OrderItem.Extras[j].Apply();
+            end;
+
+            {for j := 0 to OrderItem.Services.Count - 1 do begin
+              OrderItem.Services[j].UserPrice := True;
+              OrderItem.Services[j].Price := StrToFloat(FormatFloat('0.00', OrderItem.Services[j].CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
+              OrderItem.Services[j].Apply();
+            end; }
+          end else begin
+            OrderItem.UserPrice := False;
+            OrderItem.Price := OrderItem.CalculatedPrice;
+
+            {for j := 0 to OrderItem.Extras.Count - 1 do begin
+              OrderItem.Extras[j].UserPrice := False;
+              OrderItem.Extras[j].Price := OrderItem.Extras[j].CalculatedPrice;
+              OrderItem.Extras[j].Apply();
+            end;
+
+            {for j := 0 to OrderItem.Services.Count - 1 do begin
+              OrderItem.Services[j].UserPrice := False;
+              OrderItem.Services[j].Price := OrderItem.Services[j].CalculatedPrice;
+              OrderItem.Services[j].Apply();
+            end;}
           end;
-
-          for j := 0 to OrderItem.Services.Count - 1 do begin
-            OrderItem.Services[j].UserPrice := True;
-            OrderItem.Services[j].Price := StrToFloat(FormatFloat('0.00', OrderItem.Services[j].CalculatedPrice * (100 + StrToInt(trim(procent.Lines.Text))) / 100));
-            OrderItem.Services[j].Apply();
-          end;
-        end else begin
-          OrderItem.UserPrice := False;
-          OrderItem.Price := OrderItem.CalculatedPrice;
-
-          for j := 0 to OrderItem.Extras.Count - 1 do begin
-            OrderItem.Extras[j].UserPrice := False;
-            OrderItem.Extras[j].Price := OrderItem.Extras[j].CalculatedPrice;
-            OrderItem.Extras[j].Apply();
-          end;
-
-          for j := 0 to OrderItem.Services.Count - 1 do begin
-            OrderItem.Services[j].UserPrice := False;
-            OrderItem.Services[j].Price := OrderItem.Services[j].CalculatedPrice;
-            OrderItem.Services[j].Apply();
-          end;
+          OrderItem.apply;
         end;
-        OrderItem.apply;
-      end;
 
-      if valueRB.checked then begin
-        if trim(value.Lines.Text) <> '' then begin
-          OrderItem.UserPrice := True;
-          OrderItem.Price := StrToFloat(FormatFloat('0.00', OrderItem.CalculatedPrice + (OrderItem.CalculatedPrice / itemsCalcPrice * StrToInt(trim(value.Lines.Text)))));
+        if valueRB.checked then begin
+          if trim(value.Lines.Text) <> '' then begin
+            OrderItem.UserPrice := True;
+            OrderItem.Price := StrToFloat(FormatFloat('0.00', OrderItem.CalculatedPrice + (OrderItem.CalculatedPrice / itemsCalcPrice * StrToInt(trim(value.Lines.Text)))));
 
-          for j := 0 to OrderItem.Extras.Count - 1 do begin
-            CP := OrderItem.Extras[j].CalculatedPrice;
-            OrderItem.Extras[j].UserPrice := True;
-            OrderItem.Extras[j].Price := StrToFloat(FormatFloat('0.00', CP + (CP / OrderItem.Extras[j].Quantity / itemsCalcPrice * StrToInt(trim(value.Lines.Text))))); // OrderItem.Quantity
-            OrderItem.Extras[j].Apply();
+            {for j := 0 to OrderItem.Extras.Count - 1 do begin
+              CP := OrderItem.Extras[j].CalculatedPrice;
+              OrderItem.Extras[j].UserPrice := True;
+              OrderItem.Extras[j].Price := StrToFloat(FormatFloat('0.00', CP + (CP / itemsCalcPrice * StrToInt(trim(value.Lines.Text))))); // OrderItem.Quantity   //
+              OrderItem.Extras[j].Apply();
+            end;
+
+            {for j := 0 to OrderItem.Services.Count - 1 do begin
+              CP := OrderItem.Services[j].CalculatedPrice;
+              OrderItem.Services[j].UserPrice := True;
+              OrderItem.Services[j].Price := StrToFloat(FormatFloat('0.00', CP + (CP / itemsCalcPrice * StrToInt(trim(value.Lines.Text)))));
+              OrderItem.Services[j].Apply();
+            end;}
+          end else begin
+            OrderItem.UserPrice := False;
+            OrderItem.Price := OrderItem.CalculatedPrice;
+
+            {for j := 0 to OrderItem.Extras.Count - 1 do begin
+              OrderItem.Extras[j].UserPrice := False;
+              OrderItem.Extras[j].Price := OrderItem.Extras[j].CalculatedPrice;
+              OrderItem.Extras[j].Apply();
+            end;
+
+            {for j := 0 to OrderItem.Services.Count - 1 do begin
+              OrderItem.Services[j].UserPrice := False;
+              OrderItem.Services[j].Price := OrderItem.Services[j].CalculatedPrice;
+              OrderItem.Services[j].Apply();
+            end;}
           end;
-
-          for j := 0 to OrderItem.Services.Count - 1 do begin
-            CP := OrderItem.Services[j].CalculatedPrice;
-            OrderItem.Services[j].UserPrice := True;
-            OrderItem.Services[j].Price := StrToFloat(FormatFloat('0.00', CP + (CP / OrderItem.Services[j].QtyFloat / itemsCalcPrice * StrToInt(trim(value.Lines.Text)))));
-          end;
-        end else begin
-          OrderItem.UserPrice := False;
-          OrderItem.Price := OrderItem.CalculatedPrice;
-
-          for j := 0 to OrderItem.Extras.Count - 1 do begin
-            OrderItem.Extras[j].UserPrice := False;
-            OrderItem.Extras[j].Price := OrderItem.Extras[j].CalculatedPrice;
-            OrderItem.Extras[j].Apply();
-          end;
-
-          for j := 0 to OrderItem.Services.Count - 1 do begin
-            OrderItem.Services[j].UserPrice := False;
-            OrderItem.Services[j].Price := OrderItem.Services[j].CalculatedPrice;
-          end;
+          OrderItem.apply;
         end;
-        OrderItem.apply;
       end;
     end;
 
