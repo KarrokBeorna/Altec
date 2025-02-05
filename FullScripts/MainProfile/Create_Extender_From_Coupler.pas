@@ -7,6 +7,7 @@ const
   DELETE_COUPLER_FIRM = 'DELETE FROM R_FIRMPROFIL_COUPLERS WHERE COUPLERID = :COUPLERID';
   DELETE_COUPLER_ARM = 'DELETE FROM COUPLERS_REINFORCEMENTS WHERE COUPLERID = :COUPLERID';
   DELETE_COUPLER = 'DELETE FROM COUPLERS WHERE ID = :ID';
+  UPDATE_ARTICUL_TYPE = 'UPDATE VIRTARTICULES SET VIRTARTTYPEID = 11 WHERE ARTICULID = :ID';
 
 var
   S: IomSession;
@@ -37,6 +38,10 @@ begin
     end;
     try
       S.ExecSQL(DELETE_COUPLER, MakeDictionary(['ID', SelectedRecords[i].Value['ARTICULID']]));
+    except
+    end;
+    try
+      S.ExecSQL(UPDATE_ARTICUL_TYPE, MakeDictionary(['ID', SelectedRecords[i].Value['ARTICULID']]));
     except
     end;
   end;
