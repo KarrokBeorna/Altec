@@ -25,7 +25,7 @@ const
 var
   S: IomSession;
   vFileName, currStr: String;
-  entryDict: IcmDictionary;
+  entryDict, articulDict: IcmDictionary;
   sFile: TStringList;
   ViewsUIService: IpubViewsUIService;
   ObjectsUIService: IpubObjectsUIService;
@@ -57,6 +57,7 @@ begin
     S := CreateObjectSession();
     sFile := TStringList.Create;
     sFile.LoadFromFile(vFileName);
+    articulDict := CreateDictionary;
 
     REPRICENAME := 'Переоценка от ' + DateTimeToStr(Now);
     REPRICENOTE := 'Переоценка, созданная с помощью скрипта, от ' + DateTimeToStr(Now);
@@ -84,26 +85,39 @@ begin
           ARTICULIDs := S.QueryRecordList(FIND_ARTICULID, MakeDictionary(['AR_ART', ART]));
 
           for z := 0 to ARTICULIDs.Count - 1 do begin
-            ARTICULID := ARTICULIDs.Items[z].value['ARTICULID'];
+            ARTICULID := VarToStr(ARTICULIDs.Items[z].value['ARTICULID']);
 
-            try
-              RI := RP.Items.Add(S.OpenObject(IowArticul, ARTICULID));
-            except
-              visible := false;
-              showMessage('Артикул "' + ART + '" (строка №' + intToStr(i + 1) + ') не найден в программе - переоценка не будет сформирована');
-              break;
-            end;
-
-            try
-              RI.Price := PRICE;
-              RI.Apply;
-            except
-              visible := false;
-              showMessage('На артикуле "' + ART + '" (строка №' + intToStr(i + 1) + ') стоит пустая цена - ' + #13 + 'переоценка не будет сформирована');
-              break;
+            if not articulDict.Exists(ARTICULID) then begin
+              articulDict.add(ARTICULID, MakeDictionary(['ART', ART, 'PRICE', PRICE]));
+            end else begin
+              if StrToFloat(articulDict[ARTICULID].Value['PRICE']) < StrToFloat(PRICE) then begin
+                t := articulDict[ARTICULID];
+                t.Value['PRICE'] := PRICE;
+              end;
             end;
           end;
         end;
+      end;
+    end;
+
+    for i := 0 to articulDict.Count - 1 do begin
+      ART := articulDict[articulDict.Name[i]].Value['ART'];
+
+      try
+        RI := RP.Items.Add(S.OpenObject(IowArticul, StrToInt(articulDict.Name[i])));
+      except
+        visible := false;
+        showMessage('Артикул "' + ART + '" (строка №' + intToStr(i + 2) + ') не найден в программе - переоценка не будет сформирована');
+        break;
+      end;
+
+      try
+        RI.Price := articulDict[articulDict.Name[i]].Value['PRICE'];
+        RI.Apply;
+      except
+        visible := false;
+        showMessage('На артикуле "' + ART + '" (строка №' + intToStr(i + 2) + ') стоит пустая цена - ' + #13 + 'переоценка не будет сформирована');
+        break;
       end;
     end;
 
