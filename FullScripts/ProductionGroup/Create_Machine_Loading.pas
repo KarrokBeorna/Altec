@@ -177,15 +177,15 @@ begin
 
       for j := 0 to beams.count - 1 do begin
         sFile.add(FillLeft(varToStr(numBeam), '0', 3) + delimiter +
-                  VarToStr(beams[j].Value['CUSTOMER']) + delimiter +
-                  VarToStr(beams[j].Value['JOB']) + delimiter +
-                  VarToStr(beams[j].Value['ARTICUL']) + delimiter +
-                  VarToStr(beams[j].Value['PIECE']) + delimiter +
-                  VarToStr(Round(beams[j].Value['LENGTH'])) + delimiter +
-                  VarToStr(beams[j].Value['ANGLE1']) + delimiter +
-                  VarToStr(beams[j].Value['ANGLE2']) + delimiter +
-                  VarToStr(beams[j].Value['QUANTITY']) + delimiter +
-                  VarToStr(beams[j].Value['PROFILE_LENGTH'])
+                  Transliterate(VarToStr(beams[j].Value['CUSTOMER'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['JOB'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['ARTICUL'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['PIECE'])) + delimiter +
+                  Transliterate(VarToStr(Round(beams[j].Value['LENGTH']))) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['ANGLE1'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['ANGLE2'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['QUANTITY'])) + delimiter +
+                  Transliterate(VarToStr(beams[j].Value['PROFILE_LENGTH']))
         );
         numBeam := numBeam + 1;
       end;
