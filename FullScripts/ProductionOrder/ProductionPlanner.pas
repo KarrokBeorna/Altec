@@ -96,7 +96,7 @@ begin
   for i := 0 to Instance.Items.Count - 1 do begin
     for j := 0 to Instance.StatusList.Count - 1 do begin
       if VarToStr(Instance.StatusList.Items[j].PlanDate) <> '' then begin
-        if (Instance.StatusList.Items[j].Key = 2) and ((Instance.Items[i].Type.Name = 'Окно') or
+        if (Instance.StatusList.Items[j].OrderStatus.Code = 'Production') and ((Instance.Items[i].Type.Name = 'Окно') or
                                                        (Instance.Items[i].Type.Name = 'Соединитель') or
                                                        (Instance.Items[i].Type.Name = 'Сэндвич') or
                                                        (Instance.Items[i].Type.Name = 'Москитная сетка')) then begin
@@ -104,8 +104,12 @@ begin
           Instance.Items[i].Apply;
         end;
 
-        if (Instance.StatusList.Items[j].Key = 3025) and (Instance.Items[i].Type.Name = 'Стеклопакет') then begin
+        if (Instance.StatusList.Items[j].OrderStatus.Code = 'Glasspacket') and (Instance.Items[i].Type.Name = 'Стеклопакет') then begin
           Glass := Instance.Items[i].OrderUnit;
+          // Для всех СП будем использовать время от сложных СП, так как не было
+          // задачи по разбиению на сложные и простые СП, хотя это предложил
+          // буквально в тот же день, когда сдавал данный скрипт
+          Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
 
           if (Glass.GeometryType.Key <> 0) OR (Glass.ShprossChamberIndex > -1) then begin
             Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
@@ -113,17 +117,17 @@ begin
           end;
         end;
 
-        if (Instance.StatusList.Items[j].Key = 3026) and (Instance.Items[i].Type.Name = 'Набор') then begin
+        if (Instance.StatusList.Items[j].OrderStatus.Code = 'Additions') and (Instance.Items[i].Type.Name = 'Набор') then begin
           Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
           Instance.Items[i].Apply;
         end;
 
-        if (Instance.StatusList.Items[j].Key = 3027) and (Instance.Items[i].Type.Name = 'Комплект') then begin
+        if (Instance.StatusList.Items[j].OrderStatus.Code = 'Complete') and (Instance.Items[i].Type.Name = 'Комплект') then begin
           Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
           Instance.Items[i].Apply;
         end;
 
-        if (Instance.StatusList.Items[j].Key = 8) and (Instance.Items[i].Type.Name = 'Арка') then begin
+        if (Instance.StatusList.Items[j].OrderStatus.Code = 'Arc') and (Instance.Items[i].Type.Name = 'Арка') then begin
           Instance.Items[i].JobDate := Instance.StatusList.Items[j].PlanDate;
           Instance.Items[i].Apply;
         end;
