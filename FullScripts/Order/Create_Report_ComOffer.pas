@@ -2,6 +2,8 @@
   * Скрипт позволяет печатать отчёт "Коммерческое предложение" без захода в меню "Отчёты".
   * После исполнения сохраняет отчёт во "Вложениях" заказа.
   *
+  * После успешного исполнения отчёта выставляется статус "Предварительный расчёт (КП)" сделано
+  *
   * Также нужно доделать отправку непосредственно тела объекта по электронному адресу,
   * указанному в появляющемся окне, который автоматически заполняется из карточки
   * заказчика
@@ -21,21 +23,23 @@ var
   ReportStream, AttachmentStream: IcmStream;
   File: IowFile;
 
-procedure sendMail(body, mail: String);
+procedure sendMail(body, mail: String; File2: IcmStream);
 begin
   MS := CreateMailSender();
   MS.Account.FromAddress := 'support@altec.ru';
-  MS.Account.FromName := 'Test';
+  MS.Account.FromName := 'OptimaWin - Коммерческие предложения';
   MS.Account.SmtpHost := 'mail.altec.ru';
-  MS.Account.SmtpPassword := 'kwfbenbynacvjmch';
+  MS.Account.SmtpPassword := '';
   MS.Account.SmtpPort := 465;
   MS.Account.SmtpUser := 'support@altec.ru';
   MS.Account.SmtpUseSSL := True;
+
   M := MS.NewEmail;
   M.RecipientsField := varToStr(mail);
-  M.Subject := 'Коммерческое предложение';
+  M.Subject := 'Коммерческое предложение от ' + VarToStr(Date);
   M.ContentType := 'text/html';
   M.Body := Body;
+  M.Attachments.AddStream(body + '.pdf', File2);
 
   MS.SendEmail(M, empty);
 {
@@ -127,6 +131,14 @@ begin
     try
       AttachmentStream := CreateIcmStreamAdapter(T);
 
+      if (cbReady.checked) then begin
+        if FastReportExportToPDF(ReportStream, AttachmentStream, MakeDictionary(['RecordID', Instance.Key]), False) then begin
+          sendMail(Instance.Name, email.lines.text, AttachmentStream);
+        end;
+      end;
+
+      AttachmentStream := CreateIcmStreamAdapter(T);
+
       if FastReportExportToFP3(ReportStream, AttachmentStream, MakeDictionary(['RecordID', Instance.Key]), True) then begin
         File := Instance.Session.NewObject(IowFile);
         File.LoadFromStream(reportName + ' (' + varToStr(Instance.Price) + ' руб.).fp3', AttachmentStream);
@@ -140,10 +152,6 @@ begin
             Instance.StatusList.Items[i].Comment := 'Отчёт прикреплён во вложениях';
             Instance.StatusList.Items[i].apply;
           end;
-        end;
-
-        if (cbReady.checked) then begin
-          sendMail(Instance.Name, email.lines.text);
         end;
       end;
 

@@ -17,6 +17,14 @@ begin
       OrderItem := IowOrderItem(Selected.Objects[i]);
       if TRIM(procent.Lines.Text) <> '' then begin
         OrderItem.Discount := StrToInt(Copy(procent.Lines.Text, 1, Length(procent.Lines.Text) - 2));
+        for j := 0 to OrderItem.Extras.Count - 1 do begin
+          OrderItem.Extras[j].Discount := StrToInt(Copy(procent.Lines.Text, 1, Length(procent.Lines.Text) - 2));
+          OrderItem.Extras[j].apply;
+        end;
+        for j := 0 to OrderItem.Services.Count - 1 do begin
+          OrderItem.Services[j].Discount := StrToInt(Copy(procent.Lines.Text, 1, Length(procent.Lines.Text) - 2));
+          OrderItem.Services[j].apply;
+        end;
       end else begin
         OrderItem.Discount := 0;
       end;
